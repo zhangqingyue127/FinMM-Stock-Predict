@@ -1,0 +1,12 @@
+﻿=== split 纯时间切分检查 ===
+sample_id 去重后样本数: 287668
+(stock_id, end_date) 对应多个 split 的异常个数: 0
+按股票检查时间顺序异常个数: 0
+
+各 split 样本数:
+split
+train    222199
+val       33658
+test      31811
+
+未发现 train/val/test 混在一起的问题。

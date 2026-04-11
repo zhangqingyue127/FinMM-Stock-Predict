@@ -1,0 +1,25 @@
+﻿EDA 总览
+======================================
+sample_master 样本数: 287668
+涉及股票数: 296
+daily_clean 行数: 349812
+daily_clean 股票数: 296
+suspension_clean 行数: 7639
+样本时间范围: 2021-06-30 ~ 2026-03-20
+
+输出目录说明：
+图: D:\python_code\科研\金融股票多模态\eda_outputs_purged\figures
+表: D:\python_code\科研\金融股票多模态\eda_outputs_purged\tables
+报告: D:\python_code\科研\金融股票多模态\eda_outputs_purged\reports
+
+重点图文件：
+- label_distribution.png
+- top_stock_sample_count.png
+- monthly_sample_count.png
+- monthly_count_positive_rate.png
+- top_stock_suspension_events.png
+- top_stock_dropped_by_suspension.png
+- window_overlap_ratio_hist.png
+- cross_split_overlap_ratio_hist.png
+- typical_sample_windows.png
+- image_like_examples.png

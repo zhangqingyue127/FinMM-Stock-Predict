@@ -1,0 +1,6 @@
+﻿=== 图像样例图 / 典型样本图 ===
+已输出:
+1. typical_sample_windows.png：历史60日窗口 + 未来7日走势
+2. image_like_examples.png：只保留历史窗口，模拟后续图像输入的可视化形式
+
+样本明细见 selected_typical_samples.csv
