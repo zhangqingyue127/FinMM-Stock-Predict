@@ -217,15 +217,6 @@ The main figures are stored in `figures/`:
 - `gradcam_future_failure_amd.png`: strict next-day failure case;
 - `gradcam_success_failure.png`: combined success/failure visualization.
 
-## Paper Source
-
-The Overleaf-ready IEEE source is:
-
-```text
-paper/main_overleaf_ieee_with_figures_refs_v4.tex
-```
-
-Upload the repository folder to Overleaf and set this `.tex` file as the main document. The source expects the `figures/` directory to be available at the repository root.
 
 ## Interpretation Notes
 
