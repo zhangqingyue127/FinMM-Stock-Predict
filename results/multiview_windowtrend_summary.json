@@ -1,0 +1,16 @@
+{
+  "image_root": "/root/autodl-tmp/pizon2025_multiview_future1",
+  "label_mode": "window_trend",
+  "future_k": 1,
+  "num_samples": 5283,
+  "split_counts": {
+    "train": 3667,
+    "val": 818,
+    "test": 798
+  },
+  "class_counts": {
+    "uptrend": 3119,
+    "downtrend": 2164
+  },
+  "manifest": "/root/autodl-tmp/pizon2025_multiview_windowtrend/manifest.csv"
+}

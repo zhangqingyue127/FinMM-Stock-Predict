@@ -1,0 +1,89 @@
+{
+  "best_epoch": 2,
+  "best_val_loss": 0.08597091729308691,
+  "test_loss": 0.11062088867598086,
+  "test_acc": 0.9674185463659147,
+  "test_precision_weighted": 0.9678145779005499,
+  "test_recall_weighted": 0.9674185463659147,
+  "test_f1_weighted": 0.9675129265580977,
+  "confusion_matrix": [
+    [
+      279,
+      9
+    ],
+    [
+      17,
+      493
+    ]
+  ],
+  "retrieval": {
+    "retrieval_hit_at_1": 0.9711779448621554,
+    "retrieval_hit_at_5": 0.9962406015037594,
+    "retrieval_hit_at_10": 1.0
+  },
+  "classification_report": {
+    "0": {
+      "precision": 0.9425675675675675,
+      "recall": 0.96875,
+      "f1-score": 0.9554794520547946,
+      "support": 288.0
+    },
+    "1": {
+      "precision": 0.9820717131474104,
+      "recall": 0.9666666666666667,
+      "f1-score": 0.974308300395257,
+      "support": 510.0
+    },
+    "accuracy": 0.9674185463659147,
+    "macro avg": {
+      "precision": 0.962319640357489,
+      "recall": 0.9677083333333334,
+      "f1-score": 0.9648938762250258,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.9678145779005499,
+      "recall": 0.9674185463659147,
+      "f1-score": 0.9675129265580977,
+      "support": 798.0
+    }
+  },
+  "mean_gate_weights": {
+    "candle": 0.3015018403530121,
+    "ma": 0.29407718777656555,
+    "rsi": 0.248373880982399,
+    "macd": 0.15604716539382935
+  },
+  "mean_expert_entropy": {
+    "candle": 0.13968004286289215,
+    "ma": 0.13351549208164215,
+    "rsi": 0.1591310203075409,
+    "macd": 0.37036553025245667
+  },
+  "args": {
+    "manifest_csv": "/root/autodl-tmp/pizon2025_multiview_windowtrend/manifest.csv",
+    "output_dir": "/root/autodl-tmp/pizon2025_umoe_windowtrend/runs/vanilla_moe",
+    "encoder_ckpt": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_pretrain/best_multiview_encoder.pt",
+    "views": "candle,ma,rsi,macd",
+    "image_size": 224,
+    "batch_size": 32,
+    "epochs": 30,
+    "lr": 5e-05,
+    "weight_decay": 0.0005,
+    "patience": 8,
+    "dropout": 0.4,
+    "label_smoothing": 0.05,
+    "uncertainty_lambda": 0.5,
+    "beta_aux": 0.3,
+    "gamma_div": 0.02,
+    "eta_cons": 0.05,
+    "num_workers": 8,
+    "seed": 42,
+    "augment": true,
+    "no_imagenet_init": false,
+    "no_uncertainty": true,
+    "separate_experts": false,
+    "freeze_encoder": false
+  },
+  "total_time_min": 2.2195878903071087
+}

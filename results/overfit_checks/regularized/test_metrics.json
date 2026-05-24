@@ -1,0 +1,72 @@
+{
+  "best_epoch": 12,
+  "best_val_loss": 0.162597008268087,
+  "test_loss": 0.18631970944037116,
+  "test_acc": 0.9711779448621554,
+  "test_precision_weighted": 0.9712028966032392,
+  "test_recall_weighted": 0.9711779448621554,
+  "test_f1_weighted": 0.9711887783230797,
+  "confusion_matrix": [
+    [
+      277,
+      11
+    ],
+    [
+      12,
+      498
+    ]
+  ],
+  "retrieval": {
+    "retrieval_hit_at_1": 0.9598997493734336,
+    "retrieval_hit_at_5": 0.9949874686716792,
+    "retrieval_hit_at_10": 0.9962406015037594
+  },
+  "classification_report": {
+    "0": {
+      "precision": 0.9584775086505191,
+      "recall": 0.9618055555555556,
+      "f1-score": 0.9601386481802426,
+      "support": 288.0
+    },
+    "1": {
+      "precision": 0.9783889980353635,
+      "recall": 0.9764705882352941,
+      "f1-score": 0.9774288518155054,
+      "support": 510.0
+    },
+    "accuracy": 0.9711779448621554,
+    "macro avg": {
+      "precision": 0.9684332533429413,
+      "recall": 0.9691380718954248,
+      "f1-score": 0.968783749997874,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.9712028966032392,
+      "recall": 0.9711779448621554,
+      "f1-score": 0.9711887783230797,
+      "support": 798.0
+    }
+  },
+  "args": {
+    "manifest_csv": "/root/autodl-tmp/pizon2025_multiview_windowtrend/manifest.csv",
+    "output_dir": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_regularized",
+    "encoder_ckpt": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_pretrain/best_multiview_encoder.pt",
+    "image_size": 224,
+    "batch_size": 32,
+    "epochs": 30,
+    "lr": 5e-05,
+    "weight_decay": 0.0005,
+    "patience": 8,
+    "num_workers": 8,
+    "seed": 42,
+    "freeze_encoder": false,
+    "no_imagenet_init": false,
+    "fusion": "concat",
+    "views": "candle,ma,rsi,macd",
+    "dropout": 0.45,
+    "label_smoothing": 0.05,
+    "augment": true
+  },
+  "total_time_min": 4.082157981395722
+}

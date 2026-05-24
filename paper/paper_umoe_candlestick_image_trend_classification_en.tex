@@ -1,0 +1,867 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Uncertainty-aware Multi-view Expert Fusion for Interpretable Candlestick Image Trend Classification},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Uncertainty-aware Multi-view Expert Fusion for Interpretable
+Candlestick Image Trend Classification}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Uncertainty-aware Multi-view Expert Fusion for Interpretable
+Candlestick Image Trend
+Classification}\label{uncertainty-aware-multi-view-expert-fusion-for-interpretable-candlestick-image-trend-classification}
+
+\subsection{Abstract}\label{abstract}
+
+Candlestick-chart images provide a visually intuitive representation of
+financial time series and have been increasingly used for stock trend
+classification. However, high accuracy in chart-image classification is
+often difficult to interpret: a model may recognize the trend already
+visible inside the input window rather than predict the subsequent price
+movement, and standard feature-fusion models provide limited insight
+into which technical views support a decision. This paper studies
+candlestick image trend classification from the perspective of
+interpretable multi-expert prediction. We propose an
+\textbf{Uncertainty-aware Multi-view Expert Fusion} framework, termed
+\textbf{U-MoE}, that treats different technical chart renderings as
+view-specific image experts. Each stock window is rendered into four
+pure image views: raw candlestick, moving-average candlestick, RSI, and
+MACD. A shared ResNet18 encoder extracts view-level visual
+representations, each expert produces a class distribution, and a gating
+module dynamically fuses expert predictions. Crucially, the gate is
+regularized by expert predictive entropy, allowing uncertain views to
+receive lower decision weight.
+
+We evaluate U-MoE under strict chronological splits on 5,283 samples
+constructed from ten U.S. stocks. Our experiments show a clear
+distinction between visible trend recognition and future direction
+prediction. A reproduced paper-style window-trend classifier reaches
+98.37\% test accuracy, whereas strict next-day prediction remains near
+random. On the window-trend task, black-box concat fusion achieves the
+highest raw accuracy of 98.12\%, while U-MoE achieves 96.74\% accuracy
+with explicit view-level expert weights and uncertainty estimates. On
+next-day prediction, U-MoE does not improve accuracy, but its expert
+entropies approach the maximum binary entropy, revealing that the model
+cannot identify reliable visual evidence for the future label. These
+results support a cautious but useful conclusion: candlestick images are
+effective for recognizing visible trend structures, while U-MoE provides
+an interpretable mechanism for diagnosing which chart views contribute
+to a prediction and when the model should be considered uncertain.
+
+\textbf{Keywords:} candlestick chart, financial image analysis, mixture
+of experts, uncertainty estimation, interpretable machine learning,
+multi-view learning, Grad-CAM
+
+\subsection{1. Introduction}\label{introduction}
+
+Financial time-series prediction is a challenging problem because asset
+prices are noisy, non-stationary, and shaped by latent market mechanisms
+that are only partially observable. In recent years, an alternative to
+numerical feature engineering has gained attention: converting
+historical price windows into candlestick-chart images and applying
+computer vision models to classify future or contemporaneous market
+trends. This line of work is appealing because candlestick charts encode
+open, high, low, and close prices in a compact visual format familiar to
+market participants, and convolutional neural networks can learn local
+visual patterns from such images.
+
+Despite promising reported results, image-based stock prediction raises
+two important questions. First, what exactly is being predicted? In many
+chart-image settings, the label describes whether the displayed window
+itself moves upward or downward. A model can then obtain high accuracy
+by recognizing a trend already visible inside the input image. This is a
+legitimate visual trend recognition task, but it differs from predicting
+the next trading day's price direction. Second, when a model uses
+multiple technical chart views, such as candlesticks, moving averages,
+RSI, and MACD, how can we know which view contributes to the final
+decision? Standard feature concatenation can be accurate, but it
+provides little view-level interpretability.
+
+This paper focuses on the second issue while explicitly controlling for
+the first. We aim to build an interpretable pure-image model for
+candlestick trend classification, not to overstate the predictability of
+short-term returns. Our central hypothesis is that different technical
+image views behave like distinct experts: a candlestick view may capture
+price body and wick patterns, a moving-average view may capture trend
+direction, RSI may capture momentum saturation, and MACD may capture
+oscillator changes. A mixture-of-experts architecture is therefore a
+natural fit for multi-view financial chart images, provided that the
+model can also quantify when an expert is uncertain.
+
+We propose \textbf{Uncertainty-aware Multi-view Expert Fusion}
+(\textbf{U-MoE}), a multi-view image model in which each chart view has
+an expert classifier and a gate dynamically aggregates expert
+predictions. Unlike ordinary MoE models that rely only on learned gate
+scores, U-MoE discounts experts with high predictive entropy. This
+design produces not only a final class probability, but also
+interpretable quantities: expert probabilities, expert entropies, and
+gate weights. These quantities allow us to ask whether the model relies
+more on candlestick, moving-average, RSI, or MACD views for a given
+prediction, and whether the decision is supported by confident or
+uncertain experts.
+
+Our experiments are deliberately structured around two label
+definitions. The \textbf{window-trend} label indicates whether the
+closing price at the end of a 30-day input window is higher than at the
+start of the same window. This label is visually encoded in the chart
+and measures trend recognition. The \textbf{next-day} label indicates
+whether the closing price on the next trading day is higher than the
+current closing price. This label measures strict future direction
+prediction. Under the same chronological split, these two tasks behave
+very differently. Window-trend classification reaches high accuracy,
+whereas next-day prediction remains near random across CNN,
+concat-fusion, and U-MoE models.
+
+The main contributions of this paper are:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  We formulate a pure-image multi-view candlestick trend classification
+  setting in which candle, moving-average, RSI, and MACD charts are
+  treated as view-specific experts.
+\item
+  We propose U-MoE, an uncertainty-aware mixture-of-experts fusion
+  method that combines expert predictions using entropy-regularized view
+  weights.
+\item
+  We show that U-MoE provides explicit view-level interpretability
+  through expert weights and predictive entropies, while retaining
+  strong trend-recognition performance.
+\item
+  We empirically distinguish visible window-trend recognition from
+  strict next-day prediction and show that U-MoE can diagnose prediction
+  failure through high expert uncertainty.
+\item
+  We complement quantitative results with retrieval, shuffled-label
+  sanity checks, frozen-probe diagnostics, and Grad-CAM visualizations.
+\end{enumerate}
+
+\subsection{2. Related Work}\label{related-work}
+
+\subsubsection{2.1 Candlestick Image
+Classification}\label{candlestick-image-classification}
+
+Candlestick charts are widely used in technical analysis because they
+summarize price action through visual primitives such as candle bodies,
+shadows, gaps, and trend slopes. Several recent studies transform
+financial time-series windows into chart images and apply convolutional
+neural networks, object recognition methods, or image classification
+architectures to identify trend or pattern classes. These methods
+demonstrate that visual encodings can be useful for learning chart
+structures. However, reported high accuracies often depend strongly on
+label definition, window construction, and split protocol. If the target
+label is derived from the same window displayed in the input image, the
+task is trend recognition rather than future prediction.
+
+\subsubsection{2.2 Multi-view Financial
+Representations}\label{multi-view-financial-representations}
+
+Financial market states can be represented from multiple perspectives:
+raw price charts, moving-average overlays, momentum oscillators,
+volatility indicators, and volume patterns. Multi-view learning provides
+a principled way to combine such complementary observations. In this
+paper, we restrict all information to rendered images, avoiding
+numerical tabular features or text modalities. This allows us to study
+whether a pure image model can learn and explain trend-related visual
+structures from multiple technical chart views.
+
+\subsubsection{2.3 Mixture of Experts}\label{mixture-of-experts}
+
+Mixture-of-experts models decompose prediction into multiple specialized
+experts and a gating network that assigns input-dependent expert
+weights. MoE architectures are useful when different subsets of
+features, tasks, or data regimes require different decision rules. In
+financial chart analysis, different technical indicators may be
+informative under different market conditions. This motivates a
+view-level MoE design in which candlestick, MA, RSI, and MACD images are
+separate experts. Compared with feature concatenation, MoE provides a
+natural interpretation: the gate weight indicates how much the model
+relies on each expert.
+
+\subsubsection{2.4 Uncertainty and
+Interpretability}\label{uncertainty-and-interpretability}
+
+Uncertainty estimation is important in financial applications because a
+model's abstention or lack of confidence can be as informative as its
+predicted class. Predictive entropy is a simple and widely used measure
+of classification uncertainty. For a two-class prediction, entropy
+approaches its maximum when the model assigns nearly equal probability
+to both classes. We use expert entropy to regularize view fusion and to
+diagnose whether individual chart views provide reliable evidence. For
+visual explanation, we also use Grad-CAM to inspect which image regions
+contribute to predictions.
+
+\subsection{3. Problem Definition}\label{problem-definition}
+
+\subsubsection{3.1 Data Setting}\label{data-setting}
+
+We use daily OHLC data from ten U.S. stocks: AAPL, TSLA, MSFT, AMZN,
+NVDA, META, GOOG, JPM, AMD, and BAC. The historical period spans from 20
+February 2020 to 18 December 2023. Each sample is constructed from a
+30-trading-day window. The dataset contains 5,283 samples split
+chronologically into 3,667 training samples, 818 validation samples, and
+798 test samples.
+
+The chronological split is essential. Random splits can place highly
+overlapping windows from nearby dates into both training and test sets,
+producing overly optimistic results. Throughout this paper, all reported
+test results use a future chronological holdout.
+
+\subsubsection{3.2 Label Definitions}\label{label-definitions}
+
+We consider two labels.
+
+The \textbf{window-trend} label is
+
+{[} y\_i\^{}\{win\} = \mathbb{1}(C\_t \textgreater{} C\_\{t-29\}), {]}
+
+where (C\_t) is the closing price at the end of the input window and
+(C\_\{t-29\}) is the closing price at the start of the same 30-day
+window. This label measures whether the input chart itself displays an
+upward or downward trend.
+
+The \textbf{next-day} label is
+
+{[} y\_i\^{}\{next\} = \mathbb{1}(C\_\{t+1\} \textgreater{} C\_t). {]}
+
+This label is outside the input window and corresponds to strict
+next-trading-day direction prediction.
+
+We treat these as separate tasks. Window-trend classification evaluates
+visual trend recognition. Next-day classification evaluates whether the
+image contains predictive information for the immediate future.
+
+\subsubsection{3.3 Multi-view Image
+Inputs}\label{multi-view-image-inputs}
+
+For each window, we render four RGB image views:
+
+\begin{itemize}
+\tightlist
+\item
+  (x\^{}\{candle\}): raw candlestick chart.
+\item
+  (x\^{}\{MA\}): candlestick chart with moving-average overlays.
+\item
+  (x\^{}\{RSI\}): relative strength index chart.
+\item
+  (x\^{}\{MACD\}): MACD histogram and signal-line chart.
+\end{itemize}
+
+No numerical OHLC values, volume features, text, news, or tabular
+technical indicators are provided to the model. All technical
+information is visible only through images.
+
+\subsection{4. Method}\label{method}
+
+\subsubsection{4.1 Shared Visual Encoder}\label{shared-visual-encoder}
+
+Let (V=\{1,\ldots,M\}) denote the set of views, with (M=4). For sample
+(i), view (v) is an image (x\_i\^{}v). A shared ResNet18 encoder
+(f\_\theta) maps each view to a feature vector:
+
+{[} h\_i\^{}v = f\_\theta(x\_i\^{}v) \in \mathbb{R}\^{}d. {]}
+
+The encoder is initialized from ImageNet weights and can optionally be
+initialized from a multi-view consistency pretraining checkpoint. The
+same encoder is shared across views to encourage a common visual
+representation space.
+
+\subsubsection{4.2 View-specific Experts}\label{view-specific-experts}
+
+Each view has an expert classifier (E\_v). The expert produces logits
+and probabilities:
+
+{[} z\_i\^{}v = W\_v h\_i\^{}v + b\_v, {]}
+
+{[} p\_i\^{}v = \mathrm{softmax}(z\_i\^{}v). {]}
+
+The expert prediction (p\_i\^{}v) can be interpreted as the class belief
+of a specific technical chart view.
+
+\subsubsection{4.3 Expert Uncertainty}\label{expert-uncertainty}
+
+For each expert, we compute predictive entropy:
+
+{[} H\_i\^{}v = - \sum\_\{c=1\}\^{}\{K\}
+p\_i\textsuperscript{v(c)\log p\_i}v(c), {]}
+
+where (K=2) for binary trend classification. Entropy is high when an
+expert assigns similar probabilities to upward and downward classes. In
+binary classification, the maximum entropy is (\log 2 \approx 0.693).
+
+\subsubsection{4.4 Uncertainty-aware
+Gating}\label{uncertainty-aware-gating}
+
+The gate produces an input-dependent score for each expert. In the
+local-gate variant, the score is computed from each view feature:
+
+{[} a\_i\^{}v = g\_\psi(h\_i\^{}v). {]}
+
+In the uncertainty-aware version, the score is penalized by expert
+entropy:
+
+{[} s\_i\^{}v = a\_i\^{}v - \lambda H\_i\^{}v, {]}
+
+where (\lambda) controls the strength of uncertainty discounting. Gate
+weights are obtained by a softmax over views:
+
+{[} \alpha\_i\^{}v = \frac{\exp(s_i^v)}{\sum_{u=1}^{M}\exp(s_i^u)}. {]}
+
+The final U-MoE prediction is a weighted average of expert
+probabilities:
+
+{[} p\_i\^{}\{MoE\} = \sum\_\{v=1\}\^{}\{M\} \alpha\_i\^{}v p\_i\^{}v.
+{]}
+
+This formulation makes the prediction decomposable. The final
+probability is determined by expert beliefs (p\_i\^{}v), expert
+uncertainty (H\_i\^{}v), and gate weights (\alpha\_i\^{}v).
+
+\subsubsection{4.5 Residual Concat Branch}\label{residual-concat-branch}
+
+We also evaluate a residual version that combines U-MoE with a standard
+concat-fusion classifier:
+
+{[} h\_i\^{}\{cat\} = {[}h\_i\^{}1; h\_i\^{}2; \ldots; h\_i\^{}M{]}, {]}
+
+{[} p\_i\^{}\{cat\} = \mathrm{softmax}(q\_\omega(h\_i\^{}\{cat\})). {]}
+
+The residual prediction is
+
+{[} p\_i = (1-\rho)p\_i\^{}\{MoE\} + \rho p\_i\^{}\{cat\}. {]}
+
+This variant tests whether a black-box high-capacity concat branch can
+improve performance while preserving expert weights for interpretation.
+Empirically, however, high residual weights can cause the gate to
+collapse to a single dominant view, so we treat this variant as an
+ablation rather than the main method.
+
+\subsubsection{4.6 Training Objective}\label{training-objective}
+
+The main classification loss is the negative log-likelihood of the fused
+prediction:
+
+{[} \mathcal{L}\_\{cls\} = - \log p\_i(y\_i). {]}
+
+We also include an auxiliary expert loss:
+
+{[} \mathcal{L}\emph{\{aux\} = \frac{1}{M}\sum}\{v=1\}\^{}\{M\}
+CE(z\_i\^{}v, y\_i), {]}
+
+which encourages each expert to remain individually predictive. A
+consistency term aligns expert distributions with the fused prediction:
+
+{[} \mathcal{L}\emph{\{cons\} = \frac{1}{M}\sum}\{v=1\}\^{}\{M\} KL(p\_i
+\parallel p\_i\^{}v). {]}
+
+The total loss is
+
+{[} \mathcal{L} = \mathcal{L}\emph{\{cls\} + \beta\mathcal{L}}\{aux\} +
+\eta\mathcal{L}\emph{\{cons\} + \gamma\mathcal{L}}\{div\}. {]}
+
+(\mathcal{L}\_\{div\}) is an optional feature-diversity regularizer. We
+use early stopping on validation loss.
+
+\subsection{5. Experimental Setup}\label{experimental-setup}
+
+\subsubsection{5.1 Baselines}\label{baselines}
+
+We compare U-MoE with:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Lightweight CNN:} a reproduction baseline for single
+  candlestick-image classification.
+\item
+  \textbf{Mean fusion:} average of four view embeddings followed by a
+  classifier.
+\item
+  \textbf{Concat fusion:} concatenation of four view embeddings followed
+  by an MLP classifier.
+\item
+  \textbf{Regularized concat:} concat fusion with stronger dropout, data
+  augmentation, label smoothing, and weight decay.
+\item
+  \textbf{Frozen encoder probe:} encoder frozen, classifier trained on
+  downstream labels.
+\item
+  \textbf{Shuffled-label sanity check:} training labels randomly
+  permuted while validation and test labels remain true.
+\end{itemize}
+
+Concat fusion is the strongest accuracy baseline but is not our proposed
+contribution. It is included to test whether interpretability comes at a
+performance cost.
+
+\subsubsection{5.2 Metrics}\label{metrics}
+
+We report accuracy, weighted F1, confusion matrices, and class-level
+reports. For representation quality, we report retrieval Hit@1 using
+cosine similarity between learned features. For interpretability, we
+analyze expert gate weights, expert entropies, and Grad-CAM heatmaps.
+
+\subsection{6. Results}\label{results}
+
+\subsubsection{6.1 Window-trend Recognition vs Next-day
+Prediction}\label{window-trend-recognition-vs-next-day-prediction}
+
+Table 1 shows the effect of label definition.
+
+\textbf{Table 1. Reproduction under different target definitions.}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1765}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2353}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2353}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Task
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Label
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Test Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Weighted F1
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Visible trend recognition & window-trend & Lightweight CNN & 0.9837 &
+approximately 0.9837 \\
+Strict future prediction & next-day & Lightweight CNN & 0.4962 &
+approximately 0.4757 \\
+\end{longtable}
+
+The same image-based setting yields very different results depending on
+the target. The high window-trend score indicates that the model can
+recognize the trend already displayed in the image. The next-day score
+is near random, suggesting that static chart images alone do not provide
+reliable immediate future-direction signals in this setting.
+
+\subsubsection{6.2 Multi-view Fusion
+Baselines}\label{multi-view-fusion-baselines}
+
+Table 2 compares multi-view fusion strategies on the window-trend task.
+
+\textbf{Table 2. Multi-view window-trend classification.}
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Model & Test Accuracy & Weighted F1 & Retrieval Hit@1 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mean fusion & 0.9561 & 0.9562 & 0.9574 \\
+Concat fusion & 0.9812 & 0.9813 & 0.9674 \\
+Regularized concat & 0.9712 & 0.9712 & 0.9599 \\
+Frozen encoder probe & 0.9398 & 0.9400 & approximately 0.9273 \\
+\end{longtable}
+
+Concat fusion achieves the best raw accuracy, confirming that
+view-specific information is complementary. However, concat fusion does
+not explicitly reveal which view contributes to a decision. U-MoE
+addresses this interpretability gap.
+
+\subsubsection{6.3 U-MoE on Window-trend
+Classification}\label{u-moe-on-window-trend-classification}
+
+Table 3 presents U-MoE results on the window-trend task.
+
+\textbf{Table 3. U-MoE window-trend results.}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Test Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Weighted F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Hit@1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mean Gate Weights
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Vanilla local MoE & 0.9674 & 0.9675 & 0.9712 & candle 0.302, MA 0.294,
+RSI 0.248, MACD 0.156 \\
+Uncertainty local MoE & 0.9674 & 0.9675 & 0.9712 & candle 0.291, MA
+0.289, RSI 0.261, MACD 0.159 \\
+Global U-MoE regularized & 0.9574 & 0.9573 & 0.9674 & candle 0.167, MA
+0.386, RSI 0.035, MACD 0.412 \\
+Residual MLP U-MoE, (\rho=0.5) & 0.9649 & 0.9648 & 0.9662 & candle
+0.002, MA 0.635, RSI 0.352, MACD 0.011 \\
+\end{longtable}
+
+The local uncertainty-aware U-MoE achieves 96.74\% accuracy with
+balanced expert weights. Although it does not exceed concat fusion in
+accuracy, it provides a direct decomposition of model behavior. The
+model assigns substantial weight to candlestick, MA, and RSI views,
+while MACD receives lower average weight. This suggests that, for
+visible trend recognition, price structure and trend/momentum views are
+more consistently informative than MACD in the current setup.
+
+The global and residual variants show that more flexible gates can
+become less stable. Some variants collapse to a dominant view, such as
+RSI or MA. This gate collapse is an important diagnostic: maximizing
+accuracy alone may reduce interpretability and view diversity.
+
+\subsubsection{6.4 U-MoE on Next-day
+Prediction}\label{u-moe-on-next-day-prediction}
+
+Table 4 evaluates whether U-MoE improves strict next-day prediction.
+
+\textbf{Table 4. Next-day prediction results.}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Label
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Test Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Weighted F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Retrieval Hit@1
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Lightweight CNN & next-day & 0.4962 & approximately 0.4757 & not
+reported \\
+Multi-view pretraining + classifier & future-k=1 & 0.4850 & 0.4300 &
+0.4975 \\
+U-MoE local uncertainty & future-k=1 & 0.4724 & 0.4732 & 0.4987 \\
+Residual MLP U-MoE & future-k=1 & 0.4712 & 0.4305 & 0.4987 \\
+\end{longtable}
+
+U-MoE does not improve next-day prediction. This negative result is
+important. A more expressive interpretable fusion model does not
+overcome the lack of stable predictive signal in the image-only input.
+
+The uncertainty estimates further support this interpretation. For local
+U-MoE, mean expert entropies are:
+
+\begin{longtable}[]{@{}lr@{}}
+\toprule\noalign{}
+Expert & Mean Entropy \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+candle & 0.6789 \\
+MA & 0.6797 \\
+RSI & 0.6734 \\
+MACD & 0.6825 \\
+\end{longtable}
+
+Since the maximum binary entropy is approximately 0.693, all experts are
+highly uncertain. Thus, U-MoE explains the failure mode: the model is
+not merely choosing the wrong view; rather, all views provide weak and
+uncertain evidence for next-day direction.
+
+\subsubsection{6.5 Shuffled-label Sanity
+Check}\label{shuffled-label-sanity-check}
+
+Table 5 reports the shuffled-label diagnostic.
+
+\textbf{Table 5. Shuffled-label sanity check.}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Setting
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Test Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Weighted F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Confusion Matrix
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Concat with shuffled training labels & 0.6992 & 0.6516 & {[}{[}76,
+212{]}, {[}28, 482{]}{]} \\
+\end{longtable}
+
+The performance drops substantially from 98.12\% to 69.92\%. The result
+is still above 50\% because the test set is class-imbalanced and
+predictions collapse toward the majority class. This diagnostic suggests
+that the high window-trend result is not solely caused by file paths,
+image layout, or trivial split artifacts, but it also warns that
+accuracy alone is insufficient; class-level metrics and confusion
+matrices are necessary.
+
+\subsection{7. Interpretability
+Analysis}\label{interpretability-analysis}
+
+\subsubsection{7.1 Expert Weights as View-level
+Explanations}\label{expert-weights-as-view-level-explanations}
+
+U-MoE provides a view-level explanation for every prediction. For a
+given sample, the final probability can be decomposed into:
+
+{[} p(y\textbar x) = \sum\_v \alpha\_v p\_v(y\textbar x\^{}v). {]}
+
+Here, (\alpha\_v) answers ``which chart view did the model rely on?''
+and (p\_v) answers ``what did that view predict?'' This is more
+transparent than concat fusion, where view information is mixed inside a
+single MLP.
+
+On window-trend classification, local U-MoE produces balanced average
+weights:
+
+{[} \alpha\emph{\{candle\}=0.291,\quad \alpha}\{MA\}=0.289,\quad
+\alpha\emph{\{RSI\}=0.261,\quad \alpha}\{MACD\}=0.159. {]}
+
+This pattern suggests that the model uses several complementary views
+rather than relying only on one indicator.
+
+\subsubsection{7.2 Entropy as Reliability
+Explanation}\label{entropy-as-reliability-explanation}
+
+Expert entropy provides a reliability signal. If an expert produces high
+entropy, its prediction is uncertain and its gate score is discounted.
+This is especially useful in next-day prediction. Although accuracy is
+poor, the model's uncertainty is meaningful: all experts approach
+maximum entropy, indicating that the model does not find reliable
+view-specific evidence.
+
+This gives U-MoE a distinctive interpretability role. It explains both
+confident success on visible trend recognition and uncertainty-driven
+failure on future prediction.
+
+\subsubsection{7.3 Grad-CAM Analysis}\label{grad-cam-analysis}
+
+We use Grad-CAM to visualize discriminative regions for each image view.
+In successful window-trend cases, useful explanations should focus on
+candle bodies, trend slopes, moving-average structure, RSI turning
+regions, or MACD transitions rather than blank areas or image borders.
+
+Grad-CAM is not treated as standalone proof of financial reasoning.
+Instead, it complements expert weights and entropy:
+
+\begin{itemize}
+\tightlist
+\item
+  Gate weights identify which view is important.
+\item
+  Entropy indicates whether the view is confident.
+\item
+  Grad-CAM shows where the view-specific evidence appears in the image.
+\end{itemize}
+
+Together, these explanations form a multi-level interpretation: view
+selection, view reliability, and spatial evidence.
+
+\subsubsection{7.4 Retrieval as Representation
+Evidence}\label{retrieval-as-representation-evidence}
+
+Retrieval evaluates whether learned features organize visually similar
+trend structures. On window-trend classification, U-MoE and concat
+models obtain high Hit@1, around 0.96-0.97. On next-day prediction,
+Hit@1 is near 0.50. This contrast supports our central claim: image
+representations capture visible chart similarity, but similar chart
+shapes do not reliably imply the same next-day return direction.
+
+\subsection{8. Discussion}\label{discussion}
+
+\subsubsection{8.1 Accuracy vs
+Interpretability}\label{accuracy-vs-interpretability}
+
+The strongest raw classifier is concat fusion, not U-MoE. This is
+expected: feature concatenation preserves all view embeddings and gives
+the classifier maximum flexibility. However, concat fusion behaves as a
+black-box feature-level fusion method. U-MoE trades a small amount of
+window-trend accuracy for explicit view-level interpretability.
+
+Therefore, the proposed method should not be positioned as a universal
+accuracy improvement over concat fusion. Its contribution is different:
+it exposes which technical image experts support the decision and
+whether those experts are confident.
+
+\subsubsection{8.2 Interpreting Failure Is Also
+Valuable}\label{interpreting-failure-is-also-valuable}
+
+In financial machine learning, knowing when a model lacks reliable
+evidence is critical. The next-day experiments show that U-MoE does not
+improve predictive accuracy, but it reveals high expert uncertainty.
+This is a useful result for responsible financial AI. An interpretable
+model should not only explain confident decisions; it should also
+indicate when prediction is unreliable.
+
+\subsubsection{8.3 Implications for Candlestick Image
+Research}\label{implications-for-candlestick-image-research}
+
+Our results suggest that future candlestick-image research should
+clearly separate:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Recognizing visible trend states inside a chart.
+\item
+  Predicting out-of-window future returns.
+\item
+  Explaining which chart views drive a prediction.
+\end{enumerate}
+
+Without this separation, high classification accuracy can be
+misinterpreted as market predictability. U-MoE helps make this
+separation explicit by providing expert-level and uncertainty-level
+diagnostics.
+
+\subsection{9. Limitations}\label{limitations}
+
+This study has several limitations. First, the dataset covers ten U.S.
+stocks and one historical period. Broader evaluation across markets,
+sectors, and regimes is needed. Second, we focus on next-day prediction
+as the strict future task. Longer horizons may align better with
+technical patterns and should be explored. Third, technical indicator
+rendering choices may affect model behavior. Fourth, entropy is a simple
+uncertainty measure; future work could investigate calibration, Bayesian
+approximations, conformal prediction, or abstention mechanisms. Finally,
+Grad-CAM provides qualitative evidence but does not establish causal
+market reasoning.
+
+\subsection{10. Conclusion}\label{conclusion}
+
+This paper proposes U-MoE, an uncertainty-aware multi-view expert fusion
+framework for interpretable candlestick image trend classification. By
+treating candlestick, MA, RSI, and MACD charts as view-specific experts,
+U-MoE produces not only a final prediction but also expert
+probabilities, expert entropies, and gate weights. These quantities make
+the prediction process more transparent than standard concat fusion.
+
+Experiments show that candlestick images can support highly accurate
+visible trend recognition, but strict next-day prediction remains near
+random. U-MoE achieves strong window-trend performance and provides
+interpretable expert weights. More importantly, when applied to next-day
+prediction, U-MoE reveals uniformly high expert uncertainty, explaining
+why the model cannot make reliable image-only future predictions.
+
+The main message is therefore cautious and interpretable: candlestick
+image models should not be judged solely by accuracy. A useful financial
+image model should also explain which visual views support its decision
+and when the evidence is too uncertain to trust. U-MoE offers a step
+toward such interpretable and uncertainty-aware financial chart
+analysis.
+
+\subsection{References}\label{references}
+
+References should be filled according to the target venue style.
+Recommended citation groups include:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Candlestick chart image classification and stock chart pattern
+  recognition.
+\item
+  Image-based time-series trend classification.
+\item
+  Mixture-of-experts models and sparse/dynamic expert routing.
+\item
+  Multi-view representation learning.
+\item
+  Predictive entropy, uncertainty estimation, and model calibration.
+\item
+  Grad-CAM and visual explanation methods.
+\item
+  Financial machine learning evaluation, chronological splits, and
+  leakage-aware backtesting.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,51 @@
+{
+  "split": "test",
+  "run_dirs": [
+    "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat",
+    "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_seed7",
+    "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_seed123",
+    "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_lr1e4",
+    "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_lr3e5_wd1e5"
+  ],
+  "test_acc": 0.9786967418546366,
+  "test_precision_weighted": 0.9787740258961929,
+  "test_recall_weighted": 0.9786967418546366,
+  "test_f1_weighted": 0.9787205109078502,
+  "confusion_matrix": [
+    [
+      281,
+      7
+    ],
+    [
+      10,
+      500
+    ]
+  ],
+  "classification_report": {
+    "0": {
+      "precision": 0.9656357388316151,
+      "recall": 0.9756944444444444,
+      "f1-score": 0.9706390328151986,
+      "support": 288.0
+    },
+    "1": {
+      "precision": 0.9861932938856016,
+      "recall": 0.9803921568627451,
+      "f1-score": 0.983284169124877,
+      "support": 510.0
+    },
+    "accuracy": 0.9786967418546366,
+    "macro avg": {
+      "precision": 0.9759145163586084,
+      "recall": 0.9780433006535947,
+      "f1-score": 0.9769616009700378,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.9787740258961929,
+      "recall": 0.9786967418546366,
+      "f1-score": 0.9787205109078502,
+      "support": 798.0
+    }
+  }
+}

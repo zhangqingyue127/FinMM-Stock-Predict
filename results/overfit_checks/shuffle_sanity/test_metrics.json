@@ -1,0 +1,73 @@
+{
+  "best_epoch": 3,
+  "best_val_loss": 0.6553173582536376,
+  "test_loss": 0.6393051205721116,
+  "test_acc": 0.6992481203007519,
+  "test_precision_weighted": 0.7076053023269768,
+  "test_recall_weighted": 0.6992481203007519,
+  "test_f1_weighted": 0.6516445361148481,
+  "confusion_matrix": [
+    [
+      76,
+      212
+    ],
+    [
+      28,
+      482
+    ]
+  ],
+  "retrieval": {
+    "retrieval_hit_at_1": 0.9260651629072681,
+    "retrieval_hit_at_5": 0.9849624060150376,
+    "retrieval_hit_at_10": 0.9949874686716792
+  },
+  "classification_report": {
+    "0": {
+      "precision": 0.7307692307692307,
+      "recall": 0.2638888888888889,
+      "f1-score": 0.3877551020408163,
+      "support": 288.0
+    },
+    "1": {
+      "precision": 0.6945244956772334,
+      "recall": 0.9450980392156862,
+      "f1-score": 0.8006644518272426,
+      "support": 510.0
+    },
+    "accuracy": 0.6992481203007519,
+    "macro avg": {
+      "precision": 0.7126468632232321,
+      "recall": 0.6044934640522875,
+      "f1-score": 0.5942097769340294,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.7076053023269768,
+      "recall": 0.6992481203007519,
+      "f1-score": 0.6516445361148481,
+      "support": 798.0
+    }
+  },
+  "args": {
+    "manifest_csv": "/root/autodl-tmp/pizon2025_multiview_windowtrend/manifest.csv",
+    "output_dir": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_classifier_concat_shuffled_labels",
+    "encoder_ckpt": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_pretrain/best_multiview_encoder.pt",
+    "image_size": 224,
+    "batch_size": 32,
+    "epochs": 12,
+    "lr": 5e-05,
+    "weight_decay": 0.0005,
+    "patience": 4,
+    "num_workers": 8,
+    "seed": 42,
+    "freeze_encoder": false,
+    "no_imagenet_init": false,
+    "fusion": "concat",
+    "views": "candle,ma,rsi,macd",
+    "dropout": 0.45,
+    "label_smoothing": 0.05,
+    "augment": true,
+    "shuffle_train_labels": true
+  },
+  "total_time_min": 1.4815550923347474
+}

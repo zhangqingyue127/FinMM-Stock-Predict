@@ -1,0 +1,65 @@
+{
+  "best_epoch": 2,
+  "best_val_loss": 0.6916864225800288,
+  "test_loss": 0.6939376710650317,
+  "test_acc": 0.49624060150375937,
+  "test_precision_weighted": 0.47964050514456885,
+  "test_recall_weighted": 0.49624060150375937,
+  "test_f1_weighted": 0.4756889453124372,
+  "confusion_matrix": [
+    [
+      101,
+      264
+    ],
+    [
+      138,
+      295
+    ]
+  ],
+  "classification_report": {
+    "downtrend": {
+      "precision": 0.4225941422594142,
+      "recall": 0.27671232876712326,
+      "f1-score": 0.3344370860927152,
+      "support": 365.0
+    },
+    "uptrend": {
+      "precision": 0.5277280858676208,
+      "recall": 0.6812933025404158,
+      "f1-score": 0.594758064516129,
+      "support": 433.0
+    },
+    "accuracy": 0.49624060150375937,
+    "macro avg": {
+      "precision": 0.47516111406351746,
+      "recall": 0.4790028156537695,
+      "f1-score": 0.46459757530442214,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.47964050514456885,
+      "recall": 0.49624060150375937,
+      "f1-score": 0.4756889453124372,
+      "support": 798.0
+    }
+  },
+  "class_to_idx": {
+    "downtrend": 0,
+    "uptrend": 1
+  },
+  "train_size": 3667,
+  "val_size": 818,
+  "test_size": 798,
+  "total_time_min": 0.14989846150080363,
+  "args": {
+    "data_root": "/root/autodl-tmp/pizon2025_repro/dataset/images",
+    "output_dir": "/root/autodl-tmp/pizon2025_repro/runs/cnn_100x100",
+    "epochs": 50,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "patience": 5,
+    "num_workers": 8,
+    "seed": 42
+  }
+}

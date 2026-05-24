@@ -1,0 +1,44 @@
+{
+  "paper": "Image-based time series trend classification using deep learning: A candlestick chart approach",
+  "tickers": [
+    "AAPL",
+    "TSLA",
+    "MSFT",
+    "AMZN",
+    "NVDA",
+    "META",
+    "GOOG",
+    "JPM",
+    "AMD",
+    "BAC"
+  ],
+  "start": "2020-02-20",
+  "end_exclusive": "2023-12-19",
+  "window": 30,
+  "image_size": 100,
+  "max_samples": 5283,
+  "num_samples": 5283,
+  "split_counts": {
+    "train": 3667,
+    "val": 818,
+    "test": 798
+  },
+  "class_counts": {
+    "uptrend": 2715,
+    "downtrend": 2568
+  },
+  "ticker_counts": {
+    "AAPL": 529,
+    "TSLA": 529,
+    "MSFT": 529,
+    "AMZN": 528,
+    "GOOG": 528,
+    "BAC": 528,
+    "JPM": 528,
+    "AMD": 528,
+    "NVDA": 528,
+    "META": 528
+  },
+  "manifest": "/root/autodl-tmp/pizon2025_repro/dataset/manifest.csv",
+  "image_root": "/root/autodl-tmp/pizon2025_repro/dataset/images"
+}

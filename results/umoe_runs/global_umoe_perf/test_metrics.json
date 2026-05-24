@@ -1,0 +1,90 @@
+{
+  "best_epoch": 4,
+  "best_val_loss": 0.07585095821009963,
+  "test_loss": 0.0790376180094634,
+  "test_acc": 0.9649122807017544,
+  "test_precision_weighted": 0.9649777784129071,
+  "test_recall_weighted": 0.9649122807017544,
+  "test_f1_weighted": 0.9649385187907057,
+  "confusion_matrix": [
+    [
+      275,
+      13
+    ],
+    [
+      15,
+      495
+    ]
+  ],
+  "retrieval": {
+    "retrieval_hit_at_1": 0.9586466165413534,
+    "retrieval_hit_at_5": 0.9949874686716792,
+    "retrieval_hit_at_10": 0.9987468671679198
+  },
+  "classification_report": {
+    "0": {
+      "precision": 0.9482758620689655,
+      "recall": 0.9548611111111112,
+      "f1-score": 0.9515570934256056,
+      "support": 288.0
+    },
+    "1": {
+      "precision": 0.9744094488188977,
+      "recall": 0.9705882352941176,
+      "f1-score": 0.9724950884086444,
+      "support": 510.0
+    },
+    "accuracy": 0.9649122807017544,
+    "macro avg": {
+      "precision": 0.9613426554439316,
+      "recall": 0.9627246732026145,
+      "f1-score": 0.962026090917125,
+      "support": 798.0
+    },
+    "weighted avg": {
+      "precision": 0.9649777784129071,
+      "recall": 0.9649122807017544,
+      "f1-score": 0.9649385187907057,
+      "support": 798.0
+    }
+  },
+  "mean_gate_weights": {
+    "candle": 0.0017444967525079846,
+    "ma": 0.01428297720849514,
+    "rsi": 0.9488362669944763,
+    "macd": 0.035135842859745026
+  },
+  "mean_expert_entropy": {
+    "candle": 0.18407371640205383,
+    "ma": 0.151187464594841,
+    "rsi": 0.06839675456285477,
+    "macd": 0.19981494545936584
+  },
+  "args": {
+    "manifest_csv": "/root/autodl-tmp/pizon2025_multiview_windowtrend/manifest.csv",
+    "output_dir": "/root/autodl-tmp/pizon2025_umoe_windowtrend/runs/global_umoe_perf",
+    "encoder_ckpt": "/root/autodl-tmp/pizon2025_multiview_windowtrend/runs/mv_pretrain/best_multiview_encoder.pt",
+    "views": "candle,ma,rsi,macd",
+    "image_size": 224,
+    "batch_size": 32,
+    "epochs": 30,
+    "lr": 5e-05,
+    "weight_decay": 0.0001,
+    "patience": 8,
+    "dropout": 0.25,
+    "label_smoothing": 0.0,
+    "uncertainty_lambda": 0.5,
+    "beta_aux": 0.2,
+    "gamma_div": 0.0,
+    "eta_cons": 0.02,
+    "num_workers": 8,
+    "seed": 42,
+    "augment": false,
+    "no_imagenet_init": false,
+    "no_uncertainty": false,
+    "separate_experts": false,
+    "freeze_encoder": false,
+    "global_gate": true
+  },
+  "total_time_min": 2.604629643758138
+}

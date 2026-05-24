@@ -1,0 +1,36 @@
+{
+  "title": "Multi-view Candlestick Image Representation Learning for Interpretable Stock Trend Classification",
+  "tickers": [
+    "AAPL",
+    "TSLA",
+    "MSFT",
+    "AMZN",
+    "NVDA",
+    "META",
+    "GOOG",
+    "JPM",
+    "AMD",
+    "BAC"
+  ],
+  "views": [
+    "candle",
+    "ma",
+    "rsi",
+    "macd"
+  ],
+  "window": 30,
+  "image_size": 224,
+  "label_mode": "future_k",
+  "future_k": 1,
+  "num_samples": 5283,
+  "split_counts": {
+    "train": 3667,
+    "val": 818,
+    "test": 798
+  },
+  "class_counts": {
+    "uptrend": 2715,
+    "downtrend": 2568
+  },
+  "manifest": "/root/autodl-tmp/pizon2025_multiview_future1/manifest.csv"
+}
